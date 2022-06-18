@@ -31,6 +31,11 @@ pipeline {
                 }
              }
         }
+        stage("Quality gate") {
+            steps {
+                waitForQualityGate abortPipeline: true
+            }
+        }
         stage('Publish Artifact') {
             steps {
                 archiveArtifacts artifacts: 'applications/app-service/build/libs/*.jar'
