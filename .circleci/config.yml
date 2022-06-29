@@ -27,18 +27,23 @@ jobs:
             find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
       - store_test_results:
-          path: ~/test-results
+          path: ~/test-results/junit/
       - store_artifacts:
-          path: build/reports/jacocoMergedReport/
+          path: build/reports/jacocoMergedReport/jacocoMergedReport.xml
           destination: coverage
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - applications/app-service/build/libs/
+  publish:
+    docker:
+      - image: cimg/base:2022.05
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - store_artifacts:
-          path: applications/app-service/build/libs/
+          path: /tmp/workspace/applications/app-service/build/libs/
           destination: Artifact
-          when:
-            or:
-              - equal: [ main, << pipeline.git.branch >> ]
-              - equal: [ trunk, << pipeline.git.branch >> ]
-              - equal: [ master, << pipeline.git.branch >> ]
           
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -55,3 +60,12 @@ workflows:
                 - main
                 - trunk
                 - /feature\/.*/
+      - publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
+                - main
+                - trunk
