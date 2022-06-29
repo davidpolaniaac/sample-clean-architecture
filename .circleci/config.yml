@@ -36,7 +36,6 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace/libs/
           destination: Artifact
-          
 
 workflows:
   version: 2
