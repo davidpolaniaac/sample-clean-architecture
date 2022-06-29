@@ -23,20 +23,20 @@ jobs:
       - store_artifacts:
           path: build/reports/jacocoMergedReport/jacocoMergedReport.xml
           destination: coverage
-      - persist_to_workspace:
-          root: applications/app-service/build
-          paths:
-            - libs
-  publish:
-    docker:
-      - image: cimg/base:2022.05
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - store_artifacts:
-          path: /tmp/workspace/libs/
-          destination: Artifact
-
+      - when:
+          condition:
+             or:
+               - equal: [ main, << pipeline.git.branch >> ]
+               - equal: [ trunk, << pipeline.git.branch >> ]
+               - equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - store_artifacts:
+                path: applications/app-service/build/libs/
+                destination: Artifact
+            - persist_to_workspace:
+                root: applications/app-service/build
+                paths:
+                  - libs
 workflows:
   version: 2
   ci:
@@ -49,12 +49,3 @@ workflows:
                 - main
                 - trunk
                 - /feature\/.*/
-      - publish:
-          requires:
-            - build
-          filters:
-            branches:
-              only:
-                - master
-                - main
-                - trunk
